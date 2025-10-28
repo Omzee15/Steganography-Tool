@@ -1,0 +1,5 @@
+"This is such a small amount comapred to the size data that any one could hide in a single image using stenography. 
+That too in a single image frame. 
+One single image png of 720p is roughly 2.3Mb
+and in that one single image we can store about 345 kb of hidden information which is about 353,280 characters ≈ 70,000 words
+which is about 200 long emails sent to someone across"

@@ -14,7 +14,7 @@ The maximum text length depends on media dimensions:
 - **Images:** `(width × height × 3) ÷ 8 - 9` characters
 - **Videos:** `frames × width × height × 3 ÷ 8 - 9` characters
 
-Example: 800×600 image = ~179,991 characters (~180KB of text)
+One single 720p image can roughly store 345 kb of hidden information which is about 353,280 characters ≈ 70,000 words
 ## ✨ Features
 
 - 🌐 **100% Client-Side** - No data uploaded to servers, complete privacy

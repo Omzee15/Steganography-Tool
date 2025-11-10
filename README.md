@@ -1,139 +1,131 @@
-# LSB Steganography Tool 🔐
+# EchoDcrypt - LSB Steganography Tool 🔐
 
-A Python implementation of Least Significant Bit (LSB) steganography for hiding text data in images.
+A modern web application for LSB (Least Significant Bit) steganography that works entirely in your browser. Hide and extract text messages in images and videos without any data leaving your device.
+
+🌐 **Live Demo:** [http://echodcrypt.netlify.app](http://echodcrypt.netlify.app)
 
 ## What is LSB Steganography?
 
 LSB steganography is a technique that hides information by modifying the least significant bit of each pixel value in an image. Since the LSB contributes minimally to the overall pixel value, changes are virtually invisible to the human eye.
 
-## Features
+## ✨ Features
 
-- 📸 Hide text messages in images (PNG, JPEG, etc.)
-- 🔍 Extract hidden text from images
-- 🛡️ Automatic text length validation
-- 📏 Support for large text messages
-- 🎨 Preserves image quality (minimal visual impact)
-- 🚀 Easy-to-use command-line interface
+- 🌐 **100% Client-Side** - No data uploaded to servers, complete privacy
+- � **Image Steganography** - Hide text in PNG, JPEG, and other image formats
+- 🎬 **Video Steganography** - Hide messages in video files (MP4, WebM)
+- 📊 **Capacity Calculator** - See how much text your media can store
+- 🔍 **Extract Messages** - Decode hidden text from images and videos
+- 🎨 **Modern UI** - Clean, responsive interface with tabbed navigation
+- 🚀 **Instant Results** - Real-time processing with no server delays
+- 📱 **Mobile Friendly** - Works on desktop, tablet, and mobile devices
 
-## Installation
+## 🚀 Quick Start
 
-1. Make sure you have Python 3.6+ installed
-2. Install required packages:
+### Online Usage (Recommended)
+Visit [http://echodcrypt.netlify.app](http://echodcrypt.netlify.app) and start hiding messages immediately!
+
+### Local Development
 ```bash
-pip install Pillow numpy
+# Clone the repository
+git clone https://github.com/Omzee15/Steganography-Tool.git
+cd Steganography-Tool
+
+# Install dependencies
+npm install
+
+# Start development server
+npm start
+
+# Build for production
+npm run build
 ```
 
-## Usage
+## 💡 How to Use
 
-### Command Line Interface
+### Image Steganography
+1. **Encrypt:** Upload an image, enter your secret message, click "Encrypt Image"
+2. **Decrypt:** Upload an image with hidden data, click "Decrypt Image" to reveal the message
 
-**Encode text into an image:**
-```bash
-python lsb_steganography.py encode input_image.jpg "Your secret message" output_image.png
-```
+### Video Steganography
+1. **Encrypt:** Upload a video file, enter your message, click "Encrypt Video"
+2. **Decrypt:** Upload an encrypted video, click "Decrypt Video" to extract the message
 
-**Decode text from an image:**
-```bash
-python lsb_steganography.py decode output_image.png
-```
+### Capacity Calculator
+The app automatically shows you how many characters your uploaded media can store before encryption.
 
-**Encode text from a file:**
-```bash
-python lsb_steganography.py encode input.jpg "$(cat secret.txt)" output.png
-```
+## 🔧 How It Works
 
-### Python Script Usage
-
-```python
-from lsb_steganography import encode_text_in_image, decode_text_from_image
-
-# Encode text
-encode_text_in_image("input.jpg", "Secret message", "output.png")
-
-# Decode text
-decoded_text = decode_text_from_image("output.png")
-print(decoded_text)
-```
-
-## Demo
-
-Run the demo script to see the steganography in action:
-
-```bash
-python demo.py
-```
-
-This will:
-1. Create a sample image
-2. Hide a secret message in the image
-3. Extract the message from the image
-4. Verify that the process worked correctly
-
-## How It Works
-
+### Image Processing
 1. **Encoding Process:**
-   - Convert the text to binary representation
-   - Add a delimiter (`###END###`) to mark the end of the message
-   - Modify the least significant bit of each pixel value
-   - Save the modified image
+   - Convert text to binary representation
+   - Add delimiter (`###END###`) to mark message end
+   - Modify the least significant bit of each pixel's RGB values
+   - Generate downloadable image with hidden data
 
 2. **Decoding Process:**
-   - Extract the least significant bit from each pixel
-   - Convert the binary data back to text
-   - Stop when the delimiter is found
-   - Return the hidden message
+   - Extract LSB from each pixel's RGB channels
+   - Convert binary data back to text
+   - Stop when delimiter is found
+   - Display the hidden message
 
-## File Size Considerations
+### Video Processing
+- Processes video frame-by-frame using Canvas API
+- Encodes data across multiple frames for larger capacity
+- Uses MediaRecorder API for output video generation
+- Maintains video quality while hiding data
 
-The maximum text length depends on the image size:
-- **Formula:** `max_chars = (width × height × 3) ÷ 8 - 9`
-- **Example:** 800×600 image can hide ~179,991 characters
+## 📏 Capacity Limits
 
-## Security Notes
+The maximum text length depends on media dimensions:
+- **Images:** `(width × height × 3) ÷ 8 - 9` characters
+- **Videos:** `frames × width × height × 3 ÷ 8 - 9` characters
 
-⚠️ **Important:** This is a basic implementation for educational purposes. For sensitive data:
-- Consider adding encryption before steganography
-- Use more sophisticated techniques
-- Be aware that LSB steganography can be detected by steganalysis tools
+Example: 800×600 image = ~179,991 characters (~180KB of text)
 
-## Examples
+## 🛡️ Security & Privacy
 
-### Basic Text Hiding
-```bash
-# Hide a simple message
-python lsb_steganography.py encode photo.jpg "Hello, World!" hidden.png
+- **100% Client-Side:** All processing happens in your browser
+- **No Data Upload:** Files never leave your device
+- **No Server Storage:** Nothing is saved on external servers
+- **Open Source:** Full transparency of the code
 
-# Retrieve the message
-python lsb_steganography.py decode hidden.png
-```
+⚠️ **Note:** This is for educational/personal use. For sensitive data, consider adding encryption before steganography.
 
-### Hide a Long Text File
-```bash
-# Hide contents of a text file
-python lsb_steganography.py encode landscape.jpg "$(cat story.txt)" secret_image.png
-```
+## 🛠️ Technical Stack
 
-## Technical Details
+- **Frontend:** Pure HTML5, CSS3, JavaScript (no frameworks)
+- **APIs:** Canvas API, File API, MediaRecorder API
+- **Processing:** Client-side binary manipulation
+- **Deployment:** Static hosting on Netlify
+- **Build:** Node.js build scripts for optimization
 
-- **Supported formats:** PNG, JPEG, BMP, TIFF, etc. (anything PIL supports)
-- **Color channels:** Works with RGB images (3 channels)
-- **Bit manipulation:** Modifies only the LSB of each color channel
-- **Delimiter:** Uses `###END###` to mark the end of hidden text
+## 🎯 Browser Support
 
-## Dependencies
+- ✅ Chrome 80+ (recommended)
+- ✅ Firefox 75+
+- ✅ Safari 13+
+- ✅ Edge 80+
 
-- **Pillow (PIL):** For image processing
-- **NumPy:** For efficient array operations
-- **Python 3.6+:** Core language support
+*Note: Video features require MediaRecorder API support*
 
-## License
+## 🤝 Contributing
+
+1. Fork the repository
+2. Create your feature branch (`git checkout -b feature/amazing-feature`)
+3. Commit your changes (`git commit -m 'Add some amazing feature'`)
+4. Push to the branch (`git push origin feature/amazing-feature`)
+5. Open a Pull Request
+
+## 📝 License
 
 This project is open source and available under the MIT License.
 
-## Contributing
+## 🔗 Links
 
-Feel free to submit issues, fork the repository, and create pull requests for any improvements.
+- **Live App:** [http://echodcrypt.netlify.app](http://echodcrypt.netlify.app)
+- **Repository:** [GitHub](https://github.com/Omzee15/Steganography-Tool)
+- **Issues:** [Report Bugs](https://github.com/Omzee15/Steganography-Tool/issues)
 
 ---
 
-**Happy hiding! 🕵️‍♂️**
+**Made with ❤️ for privacy-conscious steganography**

@@ -8,6 +8,13 @@ A modern web application for LSB (Least Significant Bit) steganography that work
 
 LSB steganography is a technique that hides information by modifying the least significant bit of each pixel value in an image. Since the LSB contributes minimally to the overall pixel value, changes are virtually invisible to the human eye.
 
+## 📏 Capacity Limits
+
+The maximum text length depends on media dimensions:
+- **Images:** `(width × height × 3) ÷ 8 - 9` characters
+- **Videos:** `frames × width × height × 3 ÷ 8 - 9` characters
+
+Example: 800×600 image = ~179,991 characters (~180KB of text)
 ## ✨ Features
 
 - 🌐 **100% Client-Side** - No data uploaded to servers, complete privacy
@@ -74,13 +81,6 @@ The app automatically shows you how many characters your uploaded media can stor
 - Uses MediaRecorder API for output video generation
 - Maintains video quality while hiding data
 
-## 📏 Capacity Limits
-
-The maximum text length depends on media dimensions:
-- **Images:** `(width × height × 3) ÷ 8 - 9` characters
-- **Videos:** `frames × width × height × 3 ÷ 8 - 9` characters
-
-Example: 800×600 image = ~179,991 characters (~180KB of text)
 
 ## 🛡️ Security & Privacy
 
@@ -91,22 +91,7 @@ Example: 800×600 image = ~179,991 characters (~180KB of text)
 
 ⚠️ **Note:** This is for educational/personal use. For sensitive data, consider adding encryption before steganography.
 
-## 🛠️ Technical Stack
 
-- **Frontend:** Pure HTML5, CSS3, JavaScript (no frameworks)
-- **APIs:** Canvas API, File API, MediaRecorder API
-- **Processing:** Client-side binary manipulation
-- **Deployment:** Static hosting on Netlify
-- **Build:** Node.js build scripts for optimization
-
-## 🎯 Browser Support
-
-- ✅ Chrome 80+ (recommended)
-- ✅ Firefox 75+
-- ✅ Safari 13+
-- ✅ Edge 80+
-
-*Note: Video features require MediaRecorder API support*
 
 ## 🤝 Contributing
 
@@ -120,12 +105,5 @@ Example: 800×600 image = ~179,991 characters (~180KB of text)
 
 This project is open source and available under the MIT License.
 
-## 🔗 Links
-
-- **Live App:** [http://echodcrypt.netlify.app](http://echodcrypt.netlify.app)
-- **Repository:** [GitHub](https://github.com/Omzee15/Steganography-Tool)
-- **Issues:** [Report Bugs](https://github.com/Omzee15/Steganography-Tool/issues)
 
 ---
-
-**Made with ❤️ for privacy-conscious steganography**

@@ -115,7 +115,209 @@ class Steganography {
     }
 
     /**
-     * Decode a message from an image
+     * Universal LSB decoder that works with any steganographic image
+     */
+    static async decodeUniversal(imageFile, method = 'lsb-basic') {
+        return new Promise((resolve, reject) => {
+            const img = new Image();
+            const reader = new FileReader();
+
+            reader.onload = (e) => {
+                img.onload = () => {
+                    try {
+                        const canvas = document.createElement('canvas');
+                        const ctx = canvas.getContext('2d', { willReadFrequently: true });
+                        canvas.width = img.width;
+                        canvas.height = img.height;
+
+                        // Draw image
+                        ctx.drawImage(img, 0, 0);
+
+                        // Get pixel data
+                        const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+                        const data = imageData.data;
+
+                        console.log('Universal decoding from image:', {
+                            width: canvas.width,
+                            height: canvas.height,
+                            totalPixels: data.length / 4,
+                            method: method
+                        });
+
+                        let result = '';
+
+                        switch (method) {
+                            case 'lsb-basic':
+                                result = this.extractLSBBasic(data);
+                                break;
+                            case 'lsb-sequence':
+                                result = this.extractLSBSequence(data);
+                                break;
+                            case 'red-channel-only':
+                                result = this.extractRedChannelOnly(data);
+                                break;
+                            case 'pattern-detection':
+                                result = this.extractWithPatternDetection(data);
+                                break;
+                            default:
+                                result = this.extractLSBBasic(data);
+                        }
+
+                        resolve({
+                            method: method,
+                            extractedData: result.text,
+                            rawBinary: result.binary,
+                            confidence: result.confidence,
+                            stats: result.stats
+                        });
+
+                    } catch (error) {
+                        console.error('Universal decoding error:', error);
+                        reject(error);
+                    }
+                };
+
+                img.onerror = () => reject(new Error('Failed to load image'));
+                img.src = e.target.result;
+            };
+
+            reader.onerror = () => reject(new Error('Failed to read file'));
+            reader.readAsDataURL(imageFile);
+        });
+    }
+
+    /**
+     * Basic LSB extraction from RGB channels
+     */
+    static extractLSBBasic(data) {
+        let binaryMessage = '';
+        let extractedText = '';
+        let printableChars = 0;
+        let totalChars = 0;
+        let currentByte = '';
+
+        // Extract LSB from RGB channels
+        for (let i = 0; i < data.length && totalChars < 2000; i += 4) { // Limit to first 2000 chars
+            for (let j = 0; j < 3; j++) {
+                const bit = data[i + j] & 1;
+                currentByte += bit.toString();
+                binaryMessage += bit.toString();
+
+                if (currentByte.length === 8) {
+                    const charCode = parseInt(currentByte, 2);
+                    totalChars++;
+                    
+                    if (charCode >= 32 && charCode <= 126) { // Printable ASCII
+                        const char = String.fromCharCode(charCode);
+                        extractedText += char;
+                        printableChars++;
+                    } else if (charCode === 0) {
+                        // Null terminator - common end marker
+                        if (extractedText.length > 5) {
+                            break;
+                        }
+                    } else {
+                        extractedText += '�'; // Non-printable placeholder
+                    }
+
+                    currentByte = '';
+
+                    // Check for our delimiter
+                    if (extractedText.includes('###END###')) {
+                        extractedText = extractedText.split('###END###')[0];
+                        break;
+                    }
+
+                    // Auto-stop if we're getting mostly garbage
+                    if (totalChars > 50 && (printableChars / totalChars) < 0.3) {
+                        break;
+                    }
+                }
+            }
+        }
+
+        const confidence = totalChars > 0 ? (printableChars / totalChars) * 100 : 0;
+
+        return {
+            text: extractedText,
+            binary: binaryMessage,
+            confidence: confidence,
+            stats: {
+                totalChars,
+                printableChars,
+                confidencePercent: confidence.toFixed(1)
+            }
+        };
+    }
+
+    /**
+     * Extract using sequence pattern (placeholder for future implementation)
+     */
+    static extractLSBSequence(data) {
+        // For now, same as basic but with different pattern
+        return this.extractLSBBasic(data);
+    }
+
+    /**
+     * Extract from red channel only (placeholder for future implementation)
+     */
+    static extractRedChannelOnly(data) {
+        let binaryMessage = '';
+        let extractedText = '';
+        let printableChars = 0;
+        let totalChars = 0;
+        let currentByte = '';
+
+        // Extract LSB from red channel only
+        for (let i = 0; i < data.length && totalChars < 2000; i += 4) {
+            const bit = data[i] & 1; // Red channel only
+            currentByte += bit.toString();
+            binaryMessage += bit.toString();
+
+            if (currentByte.length === 8) {
+                const charCode = parseInt(currentByte, 2);
+                totalChars++;
+                
+                if (charCode >= 32 && charCode <= 126) {
+                    const char = String.fromCharCode(charCode);
+                    extractedText += char;
+                    printableChars++;
+                } else {
+                    extractedText += '�';
+                }
+
+                currentByte = '';
+
+                if (totalChars > 50 && (printableChars / totalChars) < 0.3) {
+                    break;
+                }
+            }
+        }
+
+        const confidence = totalChars > 0 ? (printableChars / totalChars) * 100 : 0;
+
+        return {
+            text: extractedText,
+            binary: binaryMessage,
+            confidence: confidence,
+            stats: {
+                totalChars,
+                printableChars,
+                confidencePercent: confidence.toFixed(1)
+            }
+        };
+    }
+
+    /**
+     * Pattern detection method (placeholder for future implementation)
+     */
+    static extractWithPatternDetection(data) {
+        // For now, same as basic
+        return this.extractLSBBasic(data);
+    }
+
+    /**
+     * Legacy decode method for backwards compatibility
      */
     static async decodeMessage(imageFile) {
         return new Promise((resolve, reject) => {
@@ -155,8 +357,8 @@ class Steganography {
                             // Process R, G, B channels (skip Alpha)
                             for (let j = 0; j < 3 && binaryMessage.length < maxBitsToCheck; j++) {
                                 const bit = data[i + j] & 1; // Get LSB
-                                currentByte += bit;
-                                binaryMessage += bit;
+                                currentByte += bit.toString();
+                                binaryMessage += bit.toString();
 
                                 // Process complete bytes
                                 if (currentByte.length === 8) {

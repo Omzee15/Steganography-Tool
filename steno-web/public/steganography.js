@@ -200,8 +200,8 @@ class Steganography {
         for (let i = 0; i < data.length && totalChars < 2000; i += 4) { // Limit to first 2000 chars
             for (let j = 0; j < 3; j++) {
                 const bit = data[i + j] & 1;
-                currentByte += bit.toString();
-                binaryMessage += bit.toString();
+                currentByte += bit;
+                binaryMessage += bit;
 
                 if (currentByte.length === 8) {
                     const charCode = parseInt(currentByte, 2);
@@ -271,8 +271,8 @@ class Steganography {
         // Extract LSB from red channel only
         for (let i = 0; i < data.length && totalChars < 2000; i += 4) {
             const bit = data[i] & 1; // Red channel only
-            currentByte += bit.toString();
-            binaryMessage += bit.toString();
+            currentByte += bit;
+            binaryMessage += bit;
 
             if (currentByte.length === 8) {
                 const charCode = parseInt(currentByte, 2);
@@ -357,8 +357,8 @@ class Steganography {
                             // Process R, G, B channels (skip Alpha)
                             for (let j = 0; j < 3 && binaryMessage.length < maxBitsToCheck; j++) {
                                 const bit = data[i + j] & 1; // Get LSB
-                                currentByte += bit.toString();
-                                binaryMessage += bit.toString();
+                                currentByte += bit;
+                                binaryMessage += bit;
 
                                 // Process complete bytes
                                 if (currentByte.length === 8) {

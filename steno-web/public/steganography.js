@@ -195,9 +195,10 @@ class Steganography {
         let printableChars = 0;
         let totalChars = 0;
         let currentByte = '';
+        let rawText = ''; // Keep raw text including all characters
 
         // Extract LSB from RGB channels
-        for (let i = 0; i < data.length && totalChars < 2000; i += 4) { // Limit to first 2000 chars
+        for (let i = 0; i < data.length && totalChars < 5000; i += 4) { // Increased limit
             for (let j = 0; j < 3; j++) {
                 const bit = data[i + j] & 1;
                 currentByte += bit;
@@ -207,14 +208,35 @@ class Steganography {
                     const charCode = parseInt(currentByte, 2);
                     totalChars++;
                     
+                    // Store the raw character first
+                    const char = String.fromCharCode(charCode);
+                    rawText += char;
+
+                    // Check for delimiter in RAW text FIRST
+                    if (rawText.includes('###END###')) {
+                        extractedText = rawText.split('###END###')[0];
+                        const delimiterIndex = rawText.indexOf('###END###');
+                        // Recalculate printable chars for the actual message
+                        printableChars = 0;
+                        for (let k = 0; k < extractedText.length; k++) {
+                            if (extractedText.charCodeAt(k) >= 32 && extractedText.charCodeAt(k) <= 126) {
+                                printableChars++;
+                            }
+                        }
+                        totalChars = extractedText.length;
+                        break;
+                    }
+                    
                     if (charCode >= 32 && charCode <= 126) { // Printable ASCII
-                        const char = String.fromCharCode(charCode);
                         extractedText += char;
                         printableChars++;
+                    } else if (charCode === 10 || charCode === 13) { // Newline, carriage return
+                        extractedText += char;
+                        printableChars++; // Count as valid
                     } else if (charCode === 0) {
-                        // Null terminator - common end marker
-                        if (extractedText.length > 5) {
-                            break;
+                        // Null terminator - only stop if we haven't found content yet
+                        if (extractedText.length < 5) {
+                            extractedText += '�';
                         }
                     } else {
                         extractedText += '�'; // Non-printable placeholder
@@ -222,17 +244,16 @@ class Steganography {
 
                     currentByte = '';
 
-                    // Check for our delimiter
-                    if (extractedText.includes('###END###')) {
-                        extractedText = extractedText.split('###END###')[0];
-                        break;
-                    }
-
-                    // Auto-stop if we're getting mostly garbage
-                    if (totalChars > 50 && (printableChars / totalChars) < 0.3) {
+                    // More lenient auto-stop - only if we're getting mostly garbage after 100 chars
+                    if (totalChars > 100 && (printableChars / totalChars) < 0.2) {
                         break;
                     }
                 }
+            }
+            
+            // Break outer loop if delimiter found
+            if (rawText.includes('###END###')) {
+                break;
             }
         }
 
@@ -350,7 +371,8 @@ class Steganography {
                         let binaryMessage = '';
                         let currentByte = '';
                         let extractedText = '';
-                        let maxBitsToCheck = Math.min((data.length / 4) * 3, 1000000); // Limit to prevent infinite loops
+                        let rawText = ''; // Keep raw text including all characters
+                        let maxBitsToCheck = Math.min((data.length / 4) * 3, 10000000); // Limit to prevent infinite loops
                         
                         // Extract LSB from each RGB channel
                         for (let i = 0; i < data.length && binaryMessage.length < maxBitsToCheck; i += 4) {
@@ -363,21 +385,23 @@ class Steganography {
                                 // Process complete bytes
                                 if (currentByte.length === 8) {
                                     const charCode = parseInt(currentByte, 2);
-                                    if (charCode >= 32 && charCode <= 126) { // Printable ASCII
-                                        const char = String.fromCharCode(charCode);
+                                    const char = String.fromCharCode(charCode);
+                                    rawText += char; // Store all characters
+                                    
+                                    // Check for delimiter in RAW text FIRST
+                                    if (rawText.includes('###END###')) {
+                                        const message = rawText.split('###END###')[0];
+                                        console.log('Success! Found message:', message.slice(0, 50) + '...');
+                                        resolve(message);
+                                        return;
+                                    }
+                                    
+                                    if (charCode >= 32 && charCode <= 126 || charCode === 10 || charCode === 13) { // Printable ASCII or newlines
                                         extractedText += char;
                                         
                                         // Log progress
                                         if (extractedText.length % 50 === 0) {
                                             console.log('Extracted so far:', extractedText.length, 'chars');
-                                        }
-
-                                        // Check for delimiter
-                                        if (extractedText.includes('###END###')) {
-                                            const message = extractedText.split('###END###')[0];
-                                            console.log('Success! Found message:', message.slice(0, 50) + '...');
-                                            resolve(message);
-                                            return;
                                         }
                                     }
                                     currentByte = ''; // Reset for next byte
